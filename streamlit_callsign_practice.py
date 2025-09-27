@@ -63,6 +63,7 @@ if "running" not in st.session_state:
     st.session_state.running = False
 
 delay = st.slider("Seconds between call signs", 2, 10, 5)
+audio_delay = st.slider("Seconds delay before audio starts", 0, 5, 2)
 
 col1, col2 = st.columns(2)
 start = col1.button("▶️ Start", type="primary")
@@ -84,10 +85,19 @@ else:
 # ---------- Main loop ----------
 while st.session_state.running:
     cs = random_callsign()
+    
+    # Display the call sign first
     with placeholder.container():
         st.markdown(f"### 📡 {cs}")
         st.markdown(f"**Phonetic:** {' - '.join(phonetic[ch] for ch in cs)}")
     
-    spoken = " ".join(phonetic[ch] for ch in cs)
-    speak_text(spoken)
+    # Wait before playing audio
+    time.sleep(audio_delay)
+    
+    # Check if still running after the delay
+    if st.session_state.running:
+        spoken = " ".join(phonetic[ch] for ch in cs)
+        speak_text(spoken)
+    
+    # Wait for the remaining time
     time.sleep(delay)
