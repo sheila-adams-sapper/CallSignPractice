@@ -86,9 +86,10 @@ else:
 while st.session_state.running:
     cs = random_callsign()
     
-    # Display only the call sign first
+    # Display only the call sign first (clear any previous phonetic text)
     with placeholder.container():
         st.markdown(f"### 📡 {cs}")
+        st.markdown("")  # Empty line to clear previous phonetic text
     
     # Wait before playing audio
     time.sleep(audio_delay)
