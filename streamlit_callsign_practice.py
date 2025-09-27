@@ -62,8 +62,8 @@ st.markdown("*Note: Click anywhere on the page first to enable audio*")
 if "running" not in st.session_state:
     st.session_state.running = False
 
-delay = st.slider("Seconds between call signs", 2, 10, 5)
-audio_delay = st.slider("Seconds delay before audio starts", 0, 5, 2)
+delay = st.slider("Seconds between call signs - practice listening!", 2, 10, 5)
+audio_delay = st.slider("Seconds delay before audio starts - practice phonetics!", 0, 5, 2)
 
 col1, col2 = st.columns(2)
 start = col1.button("▶️ Start", type="primary")
