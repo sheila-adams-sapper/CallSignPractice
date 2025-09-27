@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import random, time, os
 
 # ---------- ITU phonetic alphabet ----------
@@ -21,8 +22,42 @@ def random_callsign():
     suffix = "".join(random.choices(letters, k=random.choice([2,3])))
     return prefix + digit + suffix
 
+def speak_text_browser(text):
+    """Use browser's built-in speech synthesis"""
+    html_code = f"""
+    <script>
+    if ('speechSynthesis' in window) {{
+        const utterance = new SpeechSynthesisUtterance('{text}');
+        utterance.rate = 0.7;
+        utterance.pitch = 1;
+        speechSynthesis.speak(utterance);
+    }}
+    </script>
+    """
+    components.html(html_code, height=0)
+
+def speak_text_local(text):
+    """Local text-to-speech for development"""
+    if os.name == "posix":    # macOS/Linux
+        os.system(f'say "{text}"')
+    else:                     # Windows
+        os.system(
+            f'powershell -c "Add-Type -AssemblyName System.Speech; '
+            f'(New-Object System.Speech.Synthesis.SpeechSynthesizer).Speak(\'{text}\')"'
+        )
+
+def speak_text(text):
+    """Cross-platform speech function"""
+    try:
+        # Try browser-based speech first (works on Streamlit Cloud)
+        speak_text_browser(text)
+    except:
+        # Fallback to local TTS for development
+        speak_text_local(text)
+
 # ---------- Streamlit UI ----------
-st.title("Amateur Radio Call-Sign Practice")
+st.title("📻 Amateur Radio Call-Sign Practice")
+st.markdown("*Note: Click anywhere on the page first to enable audio*")
 
 if "running" not in st.session_state:
     st.session_state.running = False
@@ -30,8 +65,8 @@ if "running" not in st.session_state:
 delay = st.slider("Seconds between call signs", 2, 10, 5)
 
 col1, col2 = st.columns(2)
-start = col1.button("Start")
-stop  = col2.button("Stop")
+start = col1.button("▶️ Start", type="primary")
+stop  = col2.button("⏹️ Stop")
 
 if start:
     st.session_state.running = True
@@ -40,19 +75,19 @@ if stop:
 
 placeholder = st.empty()
 
+# Status
+if st.session_state.running:
+    st.success("🔊 Practice session running...")
+else:
+    st.info("⏸️ Practice session stopped")
+
 # ---------- Main loop ----------
 while st.session_state.running:
     cs = random_callsign()
-    placeholder.markdown(f"### {cs}")
+    with placeholder.container():
+        st.markdown(f"### 📡 {cs}")
+        st.markdown(f"**Phonetic:** {' - '.join(phonetic[ch] for ch in cs)}")
+    
     spoken = " ".join(phonetic[ch] for ch in cs)
-
-    # Speak the call sign
-    if os.name == "posix":    # macOS/Linux
-        os.system(f'say "{spoken}"')
-    else:                     # Windows
-        os.system(
-            f'powershell -c "Add-Type –AssemblyName System.Speech; '
-            f'(New-Object System.Speech.Synthesis.SpeechSynthesizer).Speak(\'{spoken}\')"'
-        )
+    speak_text(spoken)
     time.sleep(delay)
-
