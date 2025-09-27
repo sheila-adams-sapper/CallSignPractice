@@ -86,16 +86,20 @@ else:
 while st.session_state.running:
     cs = random_callsign()
     
-    # Display the call sign first
+    # Display only the call sign first
     with placeholder.container():
         st.markdown(f"### 📡 {cs}")
-        st.markdown(f"**Phonetic:** {' - '.join(phonetic[ch] for ch in cs)}")
     
     # Wait before playing audio
     time.sleep(audio_delay)
     
     # Check if still running after the delay
     if st.session_state.running:
+        # Now display both call sign and phonetic text
+        with placeholder.container():
+            st.markdown(f"### 📡 {cs}")
+            st.markdown(f"**Phonetic:** {' - '.join(phonetic[ch] for ch in cs)}")
+        
         spoken = " ".join(phonetic[ch] for ch in cs)
         speak_text(spoken)
     
